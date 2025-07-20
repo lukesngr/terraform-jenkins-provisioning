@@ -1,0 +1,26 @@
+ssh-keygen -t rsa -b 2048 -f provisioning-key -N ""
+terraform init
+terraform apply -auto-approve
+ssh -i provisioning-key -o StrictHostKeyChecking=no ubuntu@$(terraform output -raw instance_public_ip)
+sudo apt-get install -y git nodejs npm
+git clone -b staging https://github.com/lukesngr/Boxoal.git
+cd Boxoal
+npm install
+npm audit
+npm run lint
+npm run test
+npm start &
+cd ..
+git clone https://github.com/lukesngr/boxoal-cypress-server.git
+cd boxoal-cypress-server
+npm install	
+npx cypress run --spec "cypress/e2e/creationTest.cy.js"
+npx cypress run --spec "cypress/e2e/updateTest.cy.js"
+npx cypress run --spec "cypress/e2e/advancedFeatures.cy.js"
+npx cypress run --spec "cypress/e2e/deleteTest.cy.js"
+cd ../Boxoal;
+git checkout -b prod
+git merge staging
+git remote set-url origin https://$GITHUB_TOKEN@github.com/lukesngr/Boxoal.git
+git push
+ps aux | grep "npm start" | grep -v grep | awk '{print $2}' | xargs kill
