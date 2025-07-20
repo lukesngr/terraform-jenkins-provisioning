@@ -26,7 +26,7 @@ resource "aws_instance" "app_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.medium"
   key_name      = aws_key_pair.provisioning-key.key_name
-
+  user_data     = file("installDependencies.sh")
   tags = {
     Name = "provisioning-server"
   }
