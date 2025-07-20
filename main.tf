@@ -30,6 +30,18 @@ resource "aws_instance" "app_server" {
   tags = {
     Name = "provisioning-server"
   }
+
+  provisioner "remote-exec" {
+    inline = ["echo 'SSH is ready!'"]
+    
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("provisioning-key")
+      host        = self.public_ip
+      timeout     = "5m"
+    }
+  }
 }
 
 output "instance_public_ip" {
